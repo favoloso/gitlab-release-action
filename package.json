@@ -1,0 +1,35 @@
+{
+  "name": "@favoloso/gitlab-release-action",
+  "version": "0.1.0",
+  "description": "GitHub Action per committare su SVN",
+  "main": "action.yml",
+  "scripts": {
+    "release": "release-it"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "Release v${version}",
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": false
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/favoloso/gitlab-release-action.git"
+  },
+  "author": "Favoloso Team <info@favoloso.team>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/favoloso/gitlab-release-action/issues"
+  },
+  "homepage": "https://github.com/favoloso/gitlab-release-action#readme",
+  "devDependencies": {
+    "release-it": "^19.0.3",
+    "zx": "^8.5.5"
+  }
+}

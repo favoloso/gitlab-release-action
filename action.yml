@@ -1,0 +1,64 @@
+name: 'Rilascio GitLab'
+description: 'Effettua il commit della repository su GitLab'
+author: 'favoloso'
+branding:
+  icon: 'package'
+  color: 'orange'
+inputs:
+  dry-run:
+    description: "Esegue l'operazione senza committare."
+    default: 'false'  
+  gitlab-token:
+    description: 'Token di accesso GitLab'
+    required: true
+  gitlab-url:
+    description: 'URL della repository GitLab'
+    required: true
+  repo-path:
+    description: "Path all'interno repository"
+    default: ''
+  repo-branch:
+    description: "Branch della repository GitLab su cui effettuare il commit"
+    required: true
+  git-user-email:
+    description: "Email dell'utente Git per il commit"
+    required: true
+  git-user-name:
+    description: "Nome dell'utente Git per il commit"
+    required: true
+  include-from:
+    description: "Path del file .include che definisce l'elenco dei file da includere con rsync. Vedere `man rsync` alla voce `--include-from` e `FILTER RULES` per maggiori informazioni"
+    default: '.gitlabinclude'
+  protect-filters:
+    description: "Protegge i file che corrispondono ai filtri definiti in `.gitlabinclude` da essere cancellati. Vedere `man rsync` alla voce `--filter 'protect ...'` per maggiori informazioni. È possibile usare più filtri separati da virgola es. openshift*,sonar*"
+    default: ''
+  package-json-path:
+    description: 'Path del package.json da cui estrarre la versione'
+    default: 'package.json'
+  commit-message:
+    description: 'Messaggio del commit (placeholder: %version%, %sha%)'
+    default: 'Rilascio %version%'
+  # allow-git-files:
+  #   description: 'Consente di committare su SVN anche i file di Git'
+  #   default: 'false'
+runs:
+  using: 'composite'
+  steps:
+    - id: deploy
+      env:
+        INPUT_GITLAB_TOKEN: ${{ inputs.gitlab-token }}
+        INPUT_GITLAB_URL: ${{ inputs.gitlab-url }}
+        INPUT_REPO_PATH: ${{ inputs.repo-path }}
+        INPUT_REPO_BRANCH: ${{ inputs.repo-branch }}
+        INPUT_GIT_USER_EMAIL: ${{ inputs.git-user-email }}
+        INPUT_GIT_USER_NAME: ${{ inputs.git-user-name }}
+        INPUT_INCLUDE_FROM: ${{ inputs.include-from }}
+        INPUT_PROTECT_FILTERS: ${{ inputs.protect-filters }}
+        INPUT_DRY_RUN: ${{ inputs.dry-run }}
+        # INPUT_ALLOW_GIT_FILES: ${{ inputs.allow-git-files }}
+        INPUT_COMMIT_MESSAGE: ${{ inputs.commit-message }}
+        INPUT_PACKAGE_JSON_PATH: ${{ inputs.package-json-path }}
+        FORCE_COLOR: "1" # Per chalk & GH actions
+      run: |
+        npx zx ${{ github.action_path }}/deploy.mjs
+      shell: bash
