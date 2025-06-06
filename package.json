@@ -1,6 +1,6 @@
 {
   "name": "@favoloso/gitlab-release-action",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "GitHub Action per committare su SVN",
   "main": "action.yml",
   "scripts": {
