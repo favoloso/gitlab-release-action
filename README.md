@@ -98,5 +98,6 @@ Corpo del commit, anche su più righe. Di default è vuoto: nessun corpo.
 
 ## Output
 
-- `changes`: file che cambiano su GitLab (`git status --porcelain`), uno per riga; vuoto = nessuna modifica
+- `changes-file`: percorso di un file con i file che cambiano su GitLab (`git status --porcelain`), uno per riga; vuoto = nessuna modifica. Un file e non un output, perché l'elenco può superare i limiti di GitHub Actions
+- `changes-count`: numero di file che cambiano
 - `committed`: `true` se ha fatto commit e push, `false` in dry-run o senza modifiche

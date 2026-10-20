@@ -45,9 +45,12 @@ inputs:
     description: 'Corpo del commit, anche su più righe; vuoto = nessun corpo'
     default: ''
 outputs:
-  changes:
-    description: 'File che cambiano su GitLab (git status --porcelain), uno per riga; vuoto = nessuna modifica'
-    value: ${{ steps.deploy.outputs.changes }}
+  changes-file:
+    description: 'Percorso del file con i file che cambiano su GitLab (git status --porcelain), uno per riga; vuoto = nessuna modifica'
+    value: ${{ steps.deploy.outputs.changes-file }}
+  changes-count:
+    description: 'Numero di file che cambiano su GitLab'
+    value: ${{ steps.deploy.outputs.changes-count }}
   committed:
     description: "'true' se ha fatto commit e push, 'false' in dry-run o senza modifiche"
     value: ${{ steps.deploy.outputs.committed }}

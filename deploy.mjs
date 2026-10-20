@@ -88,7 +88,12 @@ await $`git config user.name ${process.env.INPUT_GIT_USER_NAME}`;
 await $`git add .`;
 
 const changes = (await $`git status --porcelain`).stdout.trim();
-await setOutput('changes', changes);
+// L'elenco va in un file: con migliaia di file supera i limiti di una variabile d'ambiente
+// (128 KB) e degli output (1 MB) di GitHub Actions
+const changesFile = path.join(process.env.RUNNER_TEMP || os.tmpdir(), 'gitlab-release-changes.txt');
+await fs.writeFile(changesFile, changes ? `${changes}\n` : '');
+await setOutput('changes-file', changesFile);
+await setOutput('changes-count', String(changes ? changes.split('\n').length : 0));
 if (!changes) {
   echo(chalk.yellow(`➤ Nessun cambiamento da committare, esco.`));
   await setOutput('committed', 'false');
