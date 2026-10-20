@@ -35,9 +35,22 @@ inputs:
   package-json-path:
     description: 'Path del package.json da cui estrarre la versione'
     default: 'package.json'
+  version:
+    description: 'Versione per %version%; se vuota si legge da package-json-path'
+    default: ''
   commit-message:
     description: 'Messaggio del commit (placeholder: %version%, %sha%)'
     default: 'Rilascio %version%'
+  commit-body:
+    description: 'Corpo del commit, anche su più righe; vuoto = nessun corpo'
+    default: ''
+outputs:
+  changes:
+    description: 'File che cambiano su GitLab (git status --porcelain), uno per riga; vuoto = nessuna modifica'
+    value: ${{ steps.deploy.outputs.changes }}
+  committed:
+    description: "'true' se ha fatto commit e push, 'false' in dry-run o senza modifiche"
+    value: ${{ steps.deploy.outputs.committed }}
   # allow-git-files:
   #   description: 'Consente di committare su SVN anche i file di Git'
   #   default: 'false'
@@ -58,7 +71,9 @@ runs:
         # INPUT_ALLOW_GIT_FILES: ${{ inputs.allow-git-files }}
         INPUT_COMMIT_MESSAGE: ${{ inputs.commit-message }}
         INPUT_PACKAGE_JSON_PATH: ${{ inputs.package-json-path }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_COMMIT_BODY: ${{ inputs.commit-body }}
         FORCE_COLOR: "1" # Per chalk & GH actions
       run: |
-        npx zx ${{ github.action_path }}/deploy.mjs
+        npx --yes zx@8.8.5 ${{ github.action_path }}/deploy.mjs
       shell: bash

@@ -36,6 +36,15 @@ if (!process.env.INPUT_GIT_USER_NAME) {
   await $`exit 1`;
 }
 
+// Output della action (changes, committed): un delimitatore casuale per i valori su più righe
+async function setOutput(name, value) {
+  if (!process.env.GITHUB_OUTPUT) {
+    return;
+  }
+  const delimiter = `EOF_${crypto.randomUUID()}`;
+  await fs.appendFile(process.env.GITHUB_OUTPUT, `${name}<<${delimiter}\n${value ? `${value}\n` : ''}${delimiter}\n`);
+}
+
 cd(process.env.GITHUB_WORKSPACE);
 const shortHash = (await $`git rev-parse --short ${process.env.GITHUB_SHA}`).stdout.trim();
 
@@ -79,29 +88,44 @@ await $`git config user.name ${process.env.INPUT_GIT_USER_NAME}`;
 await $`git add .`;
 
 const changes = (await $`git status --porcelain`).stdout.trim();
+await setOutput('changes', changes);
 if (!changes) {
   echo(chalk.yellow(`➤ Nessun cambiamento da committare, esco.`));
-  await $`exit 0`;
+  await setOutput('committed', 'false');
+  // `$`exit 0`` lancerebbe solo un processo: lo script proseguirebbe fino a un `git commit` vuoto
+  process.exit(0);
 }
 echo(chalk.blue(`✓ Trovati cambiamenti da committare:`));
 echo(changes);
 echo(`::endgroup::`);
 
-const packageJsonPath = path.join(process.env.GITHUB_WORKSPACE, process.env.INPUT_PACKAGE_JSON_PATH);
-const { version } = await fs.readJson(packageJsonPath);
+// Versione esplicita (release-system) o dal package.json
+let version = process.env.INPUT_VERSION;
+if (!version) {
+  const packageJsonPath = path.join(process.env.GITHUB_WORKSPACE, process.env.INPUT_PACKAGE_JSON_PATH);
+  ({ version } = await fs.readJson(packageJsonPath));
+}
 
 const commitMessage = process.env.INPUT_COMMIT_MESSAGE
   .replace(/%version%/g, version)
   .replace(/%sha%/g, shortHash);
 echo(chalk.cyan(`ℹ︎ Commit message: ${commitMessage}`));
+// Corpo facoltativo, anche su più righe: un secondo paragrafo del messaggio
+const commitBody = process.env.INPUT_COMMIT_BODY || '';
+if (commitBody) {
+  echo(chalk.cyan(`ℹ︎ Commit body:\n${commitBody}`));
+}
+const bodyArgs = commitBody ? ['-m', commitBody] : [];
 
 if (process.env.INPUT_DRY_RUN !== 'false') {
   echo(chalk.yellow(`➤ Dry run: salto il commit.`));
+  await setOutput('committed', 'false');
 }
 else {
   echo(`::group::Effettuo il commit`);
-  await $`git commit -m ${commitMessage}`;
+  await $`git commit -m ${commitMessage} ${bodyArgs}`;
   await $`git push origin HEAD`;
   echo(chalk.green('✓ Commit e push completati.'));
   echo(`::endgroup::`);
+  await setOutput('committed', 'true');
 }

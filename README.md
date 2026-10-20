@@ -77,16 +77,26 @@ protect-filters: README.md,assets/private/**
 ### `dry-run`
 
 Se impostato a `true` non effettua il commit su SVN, ma mostra solo le modifiche che verranno effettuate.
+Senza modifiche su GitLab la action esce senza commit anche fuori dal dry-run: rilanciarla è innocuo.
 
 ### `commit-message`
 
 Messaggio di commit da utilizzare. Di default è `Rilascio %version%`.
 Possono essere utilizzate le seguenti variabili:
 
-- `%version%`: versione del package.json. Il percorso del file può essere impostato con `package-json-path`
+- `%version%`: l'input `version`, se indicato, altrimenti la versione del package.json. Il percorso del file può essere impostato con `package-json-path`
 - `%sha%`: SHA dell'ultimo commit (versione _short_)
 
 ### `package-json-path`
 
 Percorso del file `package.json` da utilizzare per estrarre la versione. 
 Di default è `package.json`.
+
+### `commit-body`
+
+Corpo del commit, anche su più righe. Di default è vuoto: nessun corpo.
+
+## Output
+
+- `changes`: file che cambiano su GitLab (`git status --porcelain`), uno per riga; vuoto = nessuna modifica
+- `committed`: `true` se ha fatto commit e push, `false` in dry-run o senza modifiche
